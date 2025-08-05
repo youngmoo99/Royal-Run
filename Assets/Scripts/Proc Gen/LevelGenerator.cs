@@ -9,6 +9,7 @@ public class LevelGenerator : MonoBehaviour
    [SerializeField] Transform chunkParent; 
    [SerializeField] float chunkLength = 10f; // chunk 길이
    [SerializeField] float moveSpeed = 8f; // chunk가 앞으로 이동하는 속도
+   [SerializeField] float minMoveSpeed = 2f; //초기 플레이어 속도
 
    List<GameObject> chunks = new List<GameObject>(); // chunk 리스트 생성
     
@@ -20,6 +21,18 @@ public class LevelGenerator : MonoBehaviour
     void Update()
     {
         MoveChunks(); // 매 프레임마다 chunk를 앞으로 이동시키고 화면 밖으로 나가면 제거 및 새 chunk 생성 
+    }
+
+    public void ChangeChunkMoveSpeed(float speedAmount)
+    {
+        moveSpeed += speedAmount;
+
+        if(moveSpeed < minMoveSpeed)
+        {
+            moveSpeed = minMoveSpeed;
+        }
+
+        Physics.gravity = new Vector3(Physics.gravity.x, Physics.gravity.y, Physics.gravity.z - speedAmount);
     }
 
     private void SpawnStartingChunks()
