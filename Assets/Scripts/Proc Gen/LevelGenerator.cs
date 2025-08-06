@@ -3,13 +3,22 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 public class LevelGenerator : MonoBehaviour
-{
+{  
+   [Header("Refernces")]
+   [SerializeField] CameraController cameraController;
    [SerializeField] GameObject chunkPrefab; //타일 프리팹
-   [SerializeField] int startingChunksAmount = 12; //초기 생성할 chunk 수 
+
    [SerializeField] Transform chunkParent; 
+
+   [Header("Level Settings")][Tooltip("The amount of chunks we start with")]
+   [SerializeField] int startingChunksAmount = 12; //초기 생성할 chunk 수 
+   [Tooltip("Do not change chunk length value unless chunk prefab size reflects change")]
    [SerializeField] float chunkLength = 10f; // chunk 길이
    [SerializeField] float moveSpeed = 8f; // chunk가 앞으로 이동하는 속도
-   [SerializeField] float minMoveSpeed = 2f; //초기 플레이어 속도
+   [SerializeField] float minMoveSpeed = 2f; 
+   [SerializeField] float maxMoveSpeed = 20f;
+   [SerializeField] float minGravityZ = -22f; 
+   [SerializeField] float maxGravityZ = -2f; 
 
    List<GameObject> chunks = new List<GameObject>(); // chunk 리스트 생성
     
@@ -24,15 +33,23 @@ public class LevelGenerator : MonoBehaviour
     }
 
     public void ChangeChunkMoveSpeed(float speedAmount)
-    {
-        moveSpeed += speedAmount;
+    {   
+        float newMoveSpeed = moveSpeed + speedAmount;
+        newMoveSpeed = Mathf.Clamp(newMoveSpeed, minMoveSpeed, maxMoveSpeed);
 
-        if(moveSpeed < minMoveSpeed)
+        if(newMoveSpeed != moveSpeed)
         {
-            moveSpeed = minMoveSpeed;
+            moveSpeed = newMoveSpeed;
+
+            float newGravityZ = Physics.gravity.z - speedAmount;
+            newGravityZ = Mathf.Clamp(newGravityZ, minGravityZ, maxGravityZ); // clamp 제한원래값, 최소값, 최대값 --> newGravityZ가 최소값보다 작으면 min값, 최대값보다 크면 max값, 그외의경우 원래값 그대로 반환 
+            Physics.gravity = new Vector3(Physics.gravity.x, Physics.gravity.y, newGravityZ);
+
+            cameraController.ChangeCameraFOV(speedAmount);
+
         }
 
-        Physics.gravity = new Vector3(Physics.gravity.x, Physics.gravity.y, Physics.gravity.z - speedAmount);
+
     }
 
     private void SpawnStartingChunks()
